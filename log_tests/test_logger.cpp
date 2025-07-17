@@ -3,45 +3,96 @@
 #include <string>
 #include "../log_lib/include/logger.hpp"
 
-TEST(LoggerTest, LogLevelChange) {
-    std::string testFile = "/tmp/test_log.txt";
+
+TEST(LoggerExtraTest, LogMessageAtEqualLevel) {
+    std::string testFile = "/tmp/test_log_equal.txt";
     std::remove(testFile.c_str());
     Logger logger(testFile, "Low");
 
-    std::string msgLow1 = "message with Low level 1";
-    logger.log(msgLow1, LogLevel::Low);
-
-    std::string levelHigh = "High";
-    logger.setLogLevel(levelHigh);
-
-    std::string msgHigh = "message with High level";
-    logger.log(msgHigh, LogLevel::High);
-
-    std::string msgLow2 = "message with Low level 2";
-    logger.log(msgLow2, LogLevel::Low);
+    std::string msg = "Equal level message";
+    logger.log(msg, LogLevel::Low);
 
     std::ifstream in(testFile);
-    std::string line;
-    bool foundLow1 = false;
-    bool foundHigh = false;
-    bool foundLow2 = false;
-
-    while (std::getline(in, line)) {
-        if (line.find(msgLow1) != std::string::npos) {
-            foundLow1 = true;
-        }
-        if (line.find(msgHigh) != std::string::npos) {
-            foundHigh = true;
-        }
-        if (line.find(msgLow2) != std::string::npos) {
-            foundLow2 = true;
-        }
-    }
-
+    std::string content((std::istreambuf_iterator<char>(in)),
+                        std::istreambuf_iterator<char>());
     in.close();
 
+    ASSERT_NE(content.find(msg), std::string::npos)
+        << "Message at equal level should be logged";
+}
 
-    ASSERT_TRUE(foundLow1) << "First low level message should be logged";
-    ASSERT_TRUE(foundHigh) << "High level message should be logged";
-    ASSERT_FALSE(foundLow2) << "Second low level message should NOT be logged after level change to High";
+TEST(LoggerExtraTest, LogMessageBelowCurrentLevel) {
+    std::string testFile = "/tmp/test_log_below.txt";
+    std::remove(testFile.c_str());
+    Logger logger(testFile, "Mid");
+
+    std::string msgLow = "Low level message not logged";
+    logger.log(msgLow, LogLevel::Low);
+
+    std::ifstream in(testFile);
+    std::string content((std::istreambuf_iterator<char>(in)),
+                        std::istreambuf_iterator<char>());
+    in.close();
+
+    ASSERT_EQ(content.find(msgLow), std::string::npos)
+        << "Message below current level should not be logged";
+}
+
+TEST(LoggerExtraTest, LogMessageAboveCurrentLevel) {
+    std::string testFile = "/tmp/test_log_above.txt";
+    std::remove(testFile.c_str());
+    Logger logger(testFile, "Mid");
+
+    std::string msgHigh = "High level message logged";
+    logger.log(msgHigh, LogLevel::High);
+
+    std::ifstream in(testFile);
+    std::string content((std::istreambuf_iterator<char>(in)),
+                        std::istreambuf_iterator<char>());
+    in.close();
+
+    ASSERT_NE(content.find(msgHigh), std::string::npos)
+        << "Message above current level should be logged";
+}
+
+TEST(LoggerExtraTest, SetInvalidLogLevelDoesNotChange) {
+    std::string testFile = "/tmp/test_log_invalid.txt";
+    std::remove(testFile.c_str());
+    Logger logger(testFile, "Low");
+
+    std::string invalidLevel = "INVALID";
+    logger.setLogLevel(invalidLevel);
+
+    std::string msg = "Message at Low level after invalid set";
+    logger.log(msg, LogLevel::Low);
+
+    std::ifstream in(testFile);
+    std::string content((std::istreambuf_iterator<char>(in)),
+                        std::istreambuf_iterator<char>());
+    in.close();
+
+    ASSERT_NE(content.find(msg), std::string::npos)
+        << "After invalid log level set, logger should retain previous level";
+}
+
+TEST(LoggerExtraTest, StringToLevelConversion) {
+    std::string levelLow = "Low";
+    std::string levelMid = "Mid";
+    std::string levelHigh = "High";
+    std::string levelCommand = "Level";
+    std::string invalid = "UnknownLevel";
+
+    Logger dummyLogger("/tmp/dummy.txt", "Low");
+
+    LogLevel low = dummyLogger.stringToLevel(levelLow);
+    LogLevel mid = dummyLogger.stringToLevel(levelMid);
+    LogLevel high = dummyLogger.stringToLevel(levelHigh);
+    LogLevel command = dummyLogger.stringToLevel(levelCommand);
+    LogLevel unk = dummyLogger.stringToLevel(invalid);
+
+    ASSERT_EQ(low, LogLevel::Low);
+    ASSERT_EQ(mid, LogLevel::Mid);
+    ASSERT_EQ(high, LogLevel::High);
+    ASSERT_EQ(command, LogLevel::Level);
+    ASSERT_EQ(unk, LogLevel::Unknown);
 }

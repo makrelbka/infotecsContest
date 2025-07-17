@@ -118,8 +118,8 @@ void Logger::writeMessage(std::string& message, const LogLevel level) {
         }
     } else if (logFile_.is_open()) {
         logFile_ << output;
+        logFile_.flush();
     } else {
-        // Fallback to standard output
         std::cout << output;
     }
 }
@@ -151,8 +151,15 @@ LogLevel Logger::stringToLevel(std::string& str) {
 }
 
 void Logger::trimWhiteSpace(std::string& str) {
-    str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+    size_t start = str.find_first_not_of(' ');
+    if (start == std::string::npos) {
+        str.clear();
+        return;
+    }
+    size_t end = str.find_last_not_of(' ');
+    str = str.substr(start, end - start + 1);
 }
+
 
 LogLevel Logger::getLevel() const {
     return currentLevel_;
