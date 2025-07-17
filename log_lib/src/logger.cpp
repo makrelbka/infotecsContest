@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cstring>
 
-// Include socket headers for macOS
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -134,11 +133,13 @@ std::string Logger::getCurrentTime() {
 }
 
 std::string Logger::levelToString(const LogLevel level) {
-    if (level == LogLevel::Low) return "Low";
-    if (level == LogLevel::Mid) return "Mid";
-    if (level == LogLevel::High) return "High";
-    if (level == LogLevel::Level) return "Level";
-    return "Unknown";
+    switch (level) {
+        case LogLevel::Low: return "Low";
+        case LogLevel::Mid: return "Mid";
+        case LogLevel::High: return "High";
+        case LogLevel::Level: return "Level";
+        default: return "Unknown";
+    }
 }
 
 LogLevel Logger::stringToLevel(std::string& str) {

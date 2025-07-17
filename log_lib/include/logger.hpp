@@ -24,14 +24,13 @@ public:
     LogLevel getLevel() const;
     std::string levelToString(const LogLevel level);
     LogLevel stringToLevel(std::string& level);
-    void writeMessage(std::string& message, const LogLevel level);
-    void trimWhiteSpace(std::string& str);
 
 private:
     std::string getCurrentTime();
+    void writeMessage(std::string& message, const LogLevel level);
     bool initSocket(const std::string& target);
-
-     std::ofstream logFile_;
+    void trimWhiteSpace(std::string& str);
+    std::ofstream logFile_;
     int socketFd_ = -1;
     bool useSocket_ = false;
     std::mutex mutex_;
