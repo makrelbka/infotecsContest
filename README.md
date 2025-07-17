@@ -15,6 +15,18 @@
 - Логирование с использованием файловой системы и сокетов
 - Сбор статистики: общее число сообщений, распределение по уровням, длины сообщений и количество сообщений за последний час
 
+## Установка
+
+#### Установка вместе с gtest
+``` bash 
+git clone --recurse-submodules git@github.com:makrelbka/infotecsContest.git
+```
+
+#### Установка без gtest
+``` bash 
+git clone git@github.com:makrelbka/infotecsContest.git
+```
+
 ## Сборка и запуск
 
 ### С использованием Makefile
